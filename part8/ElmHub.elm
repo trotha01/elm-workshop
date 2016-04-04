@@ -126,6 +126,7 @@ viewErrorMessage errorMessage =
       text ""
 
 
+onInput : Address a -> (String -> a) -> Attribute
 onInput address wrap =
   on "input" targetValue (\val -> Signal.message address (wrap val))
 

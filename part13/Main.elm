@@ -16,10 +16,30 @@ app : StartApp.App Model
 app =
   StartApp.start
     { view = view
-    , update = update
+    , update = unwrapUpdate
     , init = ( initialModel, Effects.task (searchFeed initialModel.query) )
     , inputs = []
     }
+
+unwrapUpdate Action -> Maybe Model -> ( Maybe Model, Effects Action)
+unwrapUpdate action maybeModel =
+  case action of
+    SetModel model ->
+      ( Just model, Effects.none )
+
+    someOtherAction ->
+      case maybeModel of
+        Nothing ->
+          ( maybeModel, Effects.none )
+
+        Just model ->
+          let
+            ( newModel, newEffects ) =
+              update action model
+          in
+            ( Just newModel, newEffects)
+
+
 
 
 port tasks : Signal (Task Effects.Never ())

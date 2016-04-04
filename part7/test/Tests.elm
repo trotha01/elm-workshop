@@ -15,13 +15,14 @@ all =
               """{ "items": [] }"""
            in
             assertEqual
-              ({- TODO: what goes here? -})
+              (Ok [])
               (decodeString responseDecoder emptyResponse)
     , test "they can decode responses with results in them"
         <| let
             response =
               """{ "items": [
-                      /* TODO: dummy JSON goes here */
+                  { "id": 5, "full_name": "foo", "stargazers_count": 42 },
+                  { "id": 3, "full_name": "bar", "stargazers_count": 77 }
               ] }"""
            in
             assertEqual
@@ -37,11 +38,12 @@ all =
               """{ "pizza": [] }"""
 
             isErrorResult result =
-              -- TODO return True if the given Result is an Err of some sort,
-              -- and False if it is an Ok of some sort.
-              --
-              -- Result docs: http://package.elm-lang.org/packages/elm-lang/core/3.0.0/Result
-              False
+              case result of
+                Ok _ ->
+                  False
+
+                Err _ ->
+                  True
            in
             assertEqual
               True

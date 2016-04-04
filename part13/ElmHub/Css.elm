@@ -10,5 +10,6 @@ css =
         , margin2 zero auto
         , padding (px 30)
         , fontFamilies [ "Helvetica", "Arial", "serif" ]
+        , backgroundColor (rgb 11 22 102)
         ]
     ]

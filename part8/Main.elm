@@ -45,13 +45,36 @@ responseActions =
   Signal.map decodeGithubResponse githubResponse
 
 
+
+--Signal Json.Encode.Value
+--Signal Action
+--
+--Signal.map decodeGithubResponse list
+--Signal.map (\rawJsonValue -> "foo") list
+--list = List Json.Encode.Value
+--list = List Action
+--
+--List.map decodeGithubResponse list
+--List.map (\rawJsonValue -> "foo") list
+
+
 decodeGithubResponse : Json.Encode.Value -> Action
 decodeGithubResponse value =
-  -- TODO use Json.Decode.DecodeValue to decode the response into an Action.
-  --
-  -- Hint: look at ElmHub.elm, specifically the definition of Action and
-  -- the deefinition of responseDecoder
-  SetErrorMessage (Just "TODO decode the response!")
+  case Json.Decode.decodeValue responseDecoder value of
+    Ok results ->
+      SetResults results
+
+    Err message ->
+      SetErrorMessage (Just message)
 
 
 port githubResponse : Signal Json.Encode.Value
+
+
+
+{-
+githubResponse : Signal Json.Encode.Value
+githubResponse =
+  (Signal.mailbox Json.Encode.null).signal
+
+-}
