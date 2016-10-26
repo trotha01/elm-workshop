@@ -31,19 +31,10 @@ searchFeed query =
                 ++ query
                 ++ "+language:elm&sort=stars&order=desc"
 
-        -- HINT: responseDecoder may be useful here.
         task =
-            "TODO replace this String with a Task using http://package.elm-lang.org/packages/evancz/elm-http/latest/Http#get"
+            Http.get responseDecoder url
     in
-        -- TODO replace this Cmd.none with a call to Task.perform
-        -- http://package.elm-lang.org/packages/elm-lang/core/latest/Task#perform
-        --
-        -- HINT: pass these to Task.perform, but in a different order than this!
-        --
-        -- task
-        -- HandleSearchResponse
-        -- HandleSearchError
-        Cmd.none
+        Task.perform HandleSearchError HandleSearchResponse task
 
 
 responseDecoder : Decoder (List SearchResult)
@@ -134,17 +125,12 @@ update msg model =
             ( { model | results = results }, Cmd.none )
 
         HandleSearchError error ->
-            -- TODO if decoding failed, store the message in model.errorMessage
-            --
-            -- HINT 1: Remember, model.errorMessage is a Maybe String - so it
-            -- can only be set to either Nothing or (Just "some string here")
-            --
-            -- Hint 2: look for "decode" in the documentation for this union type:
-            -- http://package.elm-lang.org/packages/evancz/elm-http/latest/Http#Error
-            --
-            -- Hint 3: to check if this is working, break responseDecoder
-            -- by changing "stargazers_count" to "description"
-            ( model, Cmd.none )
+            case error of
+                Http.UnexpectedPayload err ->
+                    ( { model | errorMessage = Just err }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         SetQuery query ->
             ( { model | query = query }, Cmd.none )
