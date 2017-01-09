@@ -95,7 +95,7 @@ viewOptions opts =
                   -- (Debug.log "username" opts.userFilter)
                   --
                   -- This way, we'll see console output whenever this gets run!
-                , defaultValue opts.userFilter
+                , defaultValue (Debug.log "username" opts.userFilter)
                 , onInput SetUserFilter
                 ]
                 []
@@ -237,7 +237,7 @@ view model =
             --
             -- Instead, the message should only appear once on page load,
             -- and then again when interacting with the options themselves.
-            [ Html.map Options (viewOptions model.options)
+            [ Html.map Options (lazy viewOptions model.options)
             , div [ class "search-input" ]
                 [ input [ class "search-query", onInput SetQuery, defaultValue model.query ] []
                 , button [ class "search-button", onClick Search ] [ text "Search" ]
@@ -246,7 +246,7 @@ view model =
         , viewErrorMessage model.errorMessage
           -- TODO add a lazy3 to wrap Table.view.
           -- (We have no Debug.log for verification this time.)
-        , Table.view tableConfig model.tableState model.results
+        , lazy3 Table.view tableConfig model.tableState model.results
         ]
 
 
