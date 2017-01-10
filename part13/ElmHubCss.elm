@@ -21,14 +21,22 @@ css =
           --   border: 0px;
           --   cursor: pointer;
           -- }
-          --
+          (.) "hide-result"
+            [ backgroundColor transparent
+            , fontWeight bold
+            , fontSize (px 18)
+            , marginLeft (px 18)
+            , border (px 0)
+            , cursor pointer
           --
           -- HINT: we use hover later on in the stylesheet...
           --
           -- .hide-result:hover {
           --   color: rgb(96, 181, 204);
           -- }
-          ((.) "content")
+            , hover [ color (rgb 96 181 204) ]
+            ]
+        , ((.) "content")
             [ width (px 960)
             , margin2 zero auto
             , padding (px 30)
