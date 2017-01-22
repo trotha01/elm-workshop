@@ -30,6 +30,7 @@ type alias Model =
     , results : List SearchResult
     , errorMessage : Maybe String
     , options : SearchOptions
+    , tableState : Table.State
     }
 
 
@@ -60,6 +61,7 @@ initialModel =
         , searchIn = "name"
         , userFilter = ""
         }
+    , tableState = Table.initialSort "Stars"
     }
 
 
@@ -91,6 +93,7 @@ type Msg
     | HandleSearchResponse (List SearchResult)
     | HandleSearchError (Maybe String)
       -- TODO add a new constructor: SetTableState Table.State
+    | SetTableState Table.State
     | DoNothing
 
 
@@ -125,6 +128,8 @@ update msg model =
 
         -- TODO add a new branch for SetTableState
         -- which records the new tableState in the Model.
+        SetTableState newTableState ->
+            ( { model | tableState = newTableState }, Cmd.none )
         DoNothing ->
             ( model, Cmd.none )
 
@@ -138,9 +143,8 @@ tableConfig : Table.Config SearchResult Msg
 tableConfig =
     Table.config
         { toId = .id >> toString
-        , toMsg =
+        , toMsg = SetTableState
             -- TODO have the table use SetTableState for its toMsg instead of:
-            (\tableState -> DoNothing)
         , columns = [ starsColumn, nameColumn ]
         }
 
@@ -188,9 +192,8 @@ view : Model -> Html Msg
 view model =
     let
         currentTableState : Table.State
-        currentTableState =
+        currentTableState = model.tableState
             -- TODO have this use the actual current table state
-            Table.initialSort "Stars"
     in
         div [ class "content" ]
             [ header []
@@ -206,7 +209,7 @@ view model =
                 ]
             , viewErrorMessage model.errorMessage
               -- TODO have this use model.results instead of []
-            , Table.view tableConfig currentTableState []
+            , Table.view tableConfig currentTableState model.results
             ]
 
 
