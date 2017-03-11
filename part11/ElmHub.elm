@@ -1,9 +1,8 @@
 port module ElmHub exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (class, target, href, defaultValue, type', checked, placeholder, value)
+import Html.Attributes exposing (class, target, href, defaultValue, type_, checked, placeholder, value)
 import Html.Events exposing (..)
-import Html.App as Html
 import Auth
 import Json.Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (..)
@@ -25,7 +24,6 @@ searchResultDecoder =
 
 
 type alias Model =
-    -- TODO add tableState : Table.State to the Model
     { query : String
     , results : List SearchResult
     , errorMessage : Maybe String
@@ -51,7 +49,6 @@ type alias SearchResult =
 
 initialModel : Model
 initialModel =
-    -- TODO initialize the Model's tableState to (Table.initialSort "Stars")
     { query = "tutorial"
     , results = []
     , errorMessage = Nothing
@@ -92,7 +89,6 @@ type Msg
     | DeleteById Int
     | HandleSearchResponse (List SearchResult)
     | HandleSearchError (Maybe String)
-      -- TODO add a new constructor: SetTableState Table.State
     | SetTableState Table.State
     | DoNothing
 
@@ -126,10 +122,9 @@ update msg model =
             in
                 ( newModel, Cmd.none )
 
-        -- TODO add a new branch for SetTableState
-        -- which records the new tableState in the Model.
         SetTableState newTableState ->
             ( { model | tableState = newTableState }, Cmd.none )
+
         DoNothing ->
             ( model, Cmd.none )
 
@@ -143,8 +138,8 @@ tableConfig : Table.Config SearchResult Msg
 tableConfig =
     Table.config
         { toId = .id >> toString
-        , toMsg = SetTableState
-            -- TODO have the table use SetTableState for its toMsg instead of:
+        , toMsg =
+            SetTableState
         , columns = [ starsColumn, nameColumn ]
         }
 
@@ -192,8 +187,10 @@ view : Model -> Html Msg
 view model =
     let
         currentTableState : Table.State
-        currentTableState = model.tableState
-            -- TODO have this use the actual current table state
+        currentTableState =
+            model.tableState
+
+        -- TODO have this use the actual current table state
     in
         div [ class "content" ]
             [ header []
@@ -259,7 +256,7 @@ viewOptions opts =
         , div [ class "search-option" ]
             [ label [ class "top-label" ] [ text "Owned by" ]
             , input
-                [ type' "text"
+                [ type_ "text"
                 , placeholder "Enter a username"
                 , defaultValue opts.userFilter
                 , onInput SetUserFilter
@@ -269,7 +266,7 @@ viewOptions opts =
         , div [ class "search-option" ]
             [ label [ class "top-label" ] [ text "Minimum Stars" ]
             , input
-                [ type' "text"
+                [ type_ "text"
                 , onBlurWithTargetValue SetMinStars
                 , defaultValue (toString opts.minStars)
                 ]
