@@ -11,29 +11,13 @@ import Css.Elements exposing (..)
 css : Stylesheet
 css =
     stylesheet
-        [ -- TODO style hide-result
-          --
-          -- .hide-result {
-          --   background-color: transparent;
-          --   font-weight: bold;
-          --   font-size: 18px;
-          --   margin-left: 18px;
-          --   border: 0px;
-          --   cursor: pointer;
-          -- }
-          (.) "hide-result"
+        [ (.) "hide-result"
             [ backgroundColor transparent
             , fontWeight bold
             , fontSize (px 18)
             , marginLeft (px 18)
             , border (px 0)
             , cursor pointer
-          --
-          -- HINT: we use hover later on in the stylesheet...
-          --
-          -- .hide-result:hover {
-          --   color: rgb(96, 181, 204);
-          -- }
             , hover [ color (rgb 96 181 204) ]
             ]
         , ((.) "content")
