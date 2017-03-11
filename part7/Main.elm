@@ -5,13 +5,11 @@ import Html exposing (..)
 import Html.Attributes exposing (class, target, href, property, defaultValue)
 import Html.Events exposing (..)
 import Http
-import Html.App as Html
-import Task exposing (Task)
 import Json.Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (..)
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
     Html.program
         { view = view
@@ -30,11 +28,9 @@ searchFeed query =
                 ++ "&q="
                 ++ query
                 ++ "+language:elm&sort=stars&order=desc"
-
-        task =
-            Http.get responseDecoder url
     in
-        Task.perform HandleSearchError HandleSearchResponse task
+        Http.get url responseDecoder
+            |> Http.send HandleSearchResponse
 
 
 responseDecoder : Decoder (List SearchResult)
@@ -111,8 +107,7 @@ type Msg
     = Search
     | SetQuery String
     | DeleteById Int
-    | HandleSearchResponse (List SearchResult)
-    | HandleSearchError Http.Error
+    | HandleSearchResponse (Result Http.Error (List SearchResult))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -121,16 +116,18 @@ update msg model =
         Search ->
             ( model, searchFeed model.query )
 
-        HandleSearchResponse results ->
-            ( { model | results = results }, Cmd.none )
+        HandleSearchResponse result ->
+            case result of
+                Ok results ->
+                    ( { model | results = results, errorMessage = Nothing }, Cmd.none )
 
-        HandleSearchError error ->
-            case error of
-                Http.UnexpectedPayload err ->
-                    ( { model | errorMessage = Just err }, Cmd.none )
+                Err error ->
+                    case error of
+                        Http.BadPayload errorMessage _ ->
+                            ( { model | errorMessage = Just errorMessage }, Cmd.none )
 
-                _ ->
-                    ( model, Cmd.none )
+                        _ ->
+                            ( model, Cmd.none )
 
         SetQuery query ->
             ( { model | query = query }, Cmd.none )

@@ -1,6 +1,6 @@
 port module Main exposing (..)
 
-import Html.App as Html
+import Html
 import Json.Decode exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (class, target, href, property, defaultValue)
@@ -10,7 +10,7 @@ import Json.Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (..)
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
     Html.program
         { view = view
