@@ -19,10 +19,10 @@ all =
 
                     isErrorResult result =
                         case result of
-                            Err err ->
+                            Err _ ->
                                 True
 
-                            Ok ok ->
+                            Ok _ ->
                                 False
                 in
                     json
@@ -32,8 +32,8 @@ all =
         , test "it successfully decodes a valid response" <|
             \() ->
                 """{ "items": [
-                     { "id": 5, "full_name": "foo", "stargazers_count": 42 },
-                     { "id": 3, "full_name": "bar", "stargazers_count": 77 }
+                    { "id": 5, "full_name": "foo", "stargazers_count": 42 },
+                    { "id": 3, "full_name": "bar", "stargazers_count": 77 }
                  ] }"""
                     |> decodeString responseDecoder
                     |> Expect.equal
