@@ -8,15 +8,18 @@ main =
     div [ class "content" ]
         [ header []
             [ -- TODO wrap this text in an <h1>
-              text "ElmHub"
+              h1 [] [ text "ElmHub" ]
             , span
-                [-- TODO give this span a class="tagline" attribute.
-                 --
-                 -- HINT: look at how our <div class="content"> does this above.
+                [ -- TODO give this span a class="tagline" attribute.
+                  class "tagline"
+
+                --
+                -- HINT: look at how our <div class="content"> does this above.
                 ]
-                [{- TODO put some text in here that says:
-                    "Like GitHub, but for Elm things."
-                 -}
+                [ {- TODO put some text in here that says:
+                     "Like GitHub, but for Elm things."
+                  -}
+                  text "Like GitHub, but for Elm things."
                 ]
             ]
         ]
