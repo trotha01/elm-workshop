@@ -1,9 +1,9 @@
 module Main exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (class, target, href, property, defaultValue)
+import Html.Attributes exposing (class, defaultValue, href, property, target)
 import Html.Events exposing (..)
-import Json.Decode exposing (..)
+import Json.Decode as Json exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import SampleResponse
 
@@ -26,9 +26,9 @@ searchResultDecoder =
     --
     -- TODO replace these calls to `hardcoded` with calls to `required`
     decode SearchResult
-        |> hardcoded 0
-        |> hardcoded ""
-        |> hardcoded 0
+        |> required "id" Json.int
+        |> required "full_name" Json.string
+        |> required "stargazers_count" Json.int
 
 
 type alias Model =
@@ -71,7 +71,10 @@ decodeResults json =
         --
         -- Ok (List SearchResult)
         -- Err String
-        _ ->
+        Ok results ->
+            results
+
+        Err err ->
             []
 
 
@@ -116,4 +119,4 @@ update msg model =
                 newResults =
                     List.filter (\{ id } -> id /= idToHide) model.results
             in
-                { model | results = newResults }
+            { model | results = newResults }
