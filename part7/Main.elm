@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import Auth
 import Html exposing (..)
-import Html.Attributes exposing (class, target, href, property, defaultValue)
+import Html.Attributes exposing (class, defaultValue, href, property, target)
 import Html.Events exposing (..)
 import Http
 import Json.Decode exposing (Decoder)
@@ -29,15 +29,16 @@ searchFeed query =
                 ++ query
                 ++ "+language:elm&sort=stars&order=desc"
 
+        -- "TODO replace this String with a Request built using http://package.elm-lang.org/packages/elm-lang/http/latest/Http#get"
         -- HINT: responseDecoder may be useful here.
         request =
-            "TODO replace this String with a Request built using http://package.elm-lang.org/packages/elm-lang/http/latest/Http#get"
+            Http.get url responseDecoder
     in
-        -- TODO replace this Cmd.none with a call to Http.send
-        -- http://package.elm-lang.org/packages/elm-lang/http/latest/Http#send
-        --
-        -- HINT: request and HandleSearchResponse may be useful here.
-        Cmd.none
+    -- TODO replace this Cmd.none with a call to Http.send
+    -- http://package.elm-lang.org/packages/elm-lang/http/latest/Http#send
+    --
+    -- HINT: request and HandleSearchResponse may be useful here.
+    Http.send HandleSearchResponse request
 
 
 responseDecoder : Decoder (List SearchResult)
@@ -121,26 +122,40 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Search ->
-            ( model, searchFeed model.query )
+            ( model |> removeError, searchFeed model.query )
 
         HandleSearchResponse result ->
             case result of
                 Ok results ->
-                    ( { model | results = results }, Cmd.none )
+                    ( { model | results = results } |> removeError, Cmd.none )
 
                 Err error ->
-                    -- TODO if decoding failed, store the message in model.errorMessage
-                    --
-                    -- HINT 1: Remember, model.errorMessage is a Maybe String - so it
-                    -- can only be set to either Nothing or (Just "some string here")
-                    --
-                    -- Hint 2: look for "decode" in the documentation for this union type:
-                    -- http://package.elm-lang.org/packages/elm-lang/http/latest/Http#Error
-                    --
-                    -- Hint 3: to check if this is working, break responseDecoder
-                    -- by changing "stargazers_count" to "description"
-                    ( model, Cmd.none )
+                    case error of
+                        Http.BadUrl err ->
+                            ( model |> addError ("BadUrl: " ++ err), Cmd.none )
 
+                        Http.Timeout ->
+                            ( model |> addError "Timeout", Cmd.none )
+
+                        Http.NetworkError ->
+                            ( model |> addError "Network Error, check your wifi", Cmd.none )
+
+                        Http.BadStatus resp ->
+                            ( model |> addError ("Bad Response Status" ++ toString resp.status.code), Cmd.none )
+
+                        Http.BadPayload str resp ->
+                            ( model |> addError ("Bad Payload. Error: " ++ str ++ "  Response: " ++ resp.body), Cmd.none )
+
+        -- TODO if decoding failed, store the message in model.errorMessage
+        --
+        -- HINT 1: Remember, model.errorMessage is a Maybe String - so it
+        -- can only be set to either Nothing or (Just "some string here")
+        --
+        -- Hint 2: look for "decode" in the documentation for this union type:
+        -- http://package.elm-lang.org/packages/elm-lang/http/latest/Http#Error
+        --
+        -- Hint 3: to check if this is working, break responseDecoder
+        -- by changing "stargazers_count" to "description"
         SetQuery query ->
             ( { model | query = query }, Cmd.none )
 
@@ -153,4 +168,14 @@ update msg model =
                 newModel =
                     { model | results = newResults }
             in
-                ( newModel, Cmd.none )
+            ( newModel, Cmd.none )
+
+
+removeError : Model -> Model
+removeError model =
+    { model | errorMessage = Nothing }
+
+
+addError : String -> Model -> Model
+addError err model =
+    { model | errorMessage = Just err }
