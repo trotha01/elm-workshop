@@ -1,11 +1,11 @@
 module Tests exposing (..)
 
-import Test exposing (..)
-import Fuzz exposing (..)
-import Expect exposing (Expectation)
 import ElmHub exposing (responseDecoder)
-import Json.Decode exposing (decodeString, Value)
+import Expect exposing (Expectation)
+import Fuzz exposing (..)
+import Json.Decode exposing (Value, decodeString)
 import String
+import Test exposing (..)
 
 
 all : Test
@@ -18,20 +18,28 @@ all =
                         """{ "pizza": [] }"""
 
                     isErrorResult result =
-                        -- TODO return True if the given Result is an Err of some sort,
-                        -- and False if it is an Ok of some sort.
-                        --
-                        -- Result docs: http://package.elm-lang.org/packages/elm-lang/core/latest/Result
-                        False
+                        case result of
+                            Err _ ->
+                                True
+
+                            _ ->
+                                False
+
+                    -- TODO return True if the given Result is an Err of some sort,
+                    -- and False if it is an Ok of some sort.
+                    --
+                    -- Result docs: http://package.elm-lang.org/packages/elm-lang/core/latest/Result
                 in
-                    json
-                        |> decodeString responseDecoder
-                        |> isErrorResult
-                        |> Expect.true "Expected decoding an invalid response to return an Err."
+                json
+                    |> decodeString responseDecoder
+                    |> isErrorResult
+                    |> Expect.true "Expected decoding an invalid response to return an Err."
         , test "it successfully decodes a valid response" <|
             \() ->
+                -- /* TODO: put JSON here! */
                 """{ "items": [
-                    /* TODO: put JSON here! */
+                  { "id":5, "full_name":"foo", "stargazers_count":42 },
+                  { "id": 3, "full_name":"bar", "stargazers_count":77 }
                  ] }"""
                     |> decodeString responseDecoder
                     |> Expect.equal
@@ -40,8 +48,8 @@ all =
                             , { id = 3, name = "bar", stars = 77 }
                             ]
                         )
-        , test "it decodes one SearchResult for each 'item' in the JSON" <|
-            \() ->
+        , fuzz (list int) "it decodes one SearchResult for each 'item' in the JSON" <|
+            \ids ->
                 let
                     -- TODO convert this to a fuzz test that generates a random
                     -- list of ids instead of this hardcoded list of three ids.
@@ -60,11 +68,11 @@ all =
                     json =
                         """{ "items": [""" ++ jsonItems ++ """] }"""
                 in
-                    case decodeString responseDecoder json of
-                        Ok results ->
-                            List.length results
-                                |> Expect.equal (List.length ids)
+                case decodeString responseDecoder json of
+                    Ok results ->
+                        List.length results
+                            |> Expect.equal (List.length ids)
 
-                        Err err ->
-                            Expect.fail ("JSON decoding failed unexpectedly: " ++ err)
+                    Err err ->
+                        Expect.fail ("JSON decoding failed unexpectedly: " ++ err)
         ]
