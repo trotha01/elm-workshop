@@ -1,9 +1,9 @@
 port module ElmHub exposing (..)
 
-import Html exposing (..)
-import Html.Attributes exposing (class, target, href, defaultValue, type_, checked, placeholder, value)
-import Html.Events exposing (..)
 import Auth
+import Html exposing (..)
+import Html.Attributes exposing (checked, class, defaultValue, href, placeholder, target, type_, value)
+import Html.Events exposing (..)
 import Json.Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (..)
 import String
@@ -82,6 +82,7 @@ viewMinStarsError message =
 type Msg
     = Search
       -- TODO add a constructor for Options OptionsMsg
+    | Options OptionsMsg
     | SetQuery String
     | DeleteById Int
     | HandleSearchResponse (List SearchResult)
@@ -95,6 +96,9 @@ update msg model =
         -- TODO Add a branch for Options which updates model.options
         --
         -- HINT: calling updateOptions will save a lot of time here!
+        Options optionsMsg ->
+            ( { model | options = updateOptions optionsMsg model.options }, Cmd.none )
+
         Search ->
             ( model, githubSearch (getQueryString model) )
 
@@ -116,7 +120,7 @@ update msg model =
                 newModel =
                     { model | results = newResults }
             in
-                ( newModel, Cmd.none )
+            ( newModel, Cmd.none )
 
         DoNothing ->
             ( model, Cmd.none )
@@ -156,7 +160,8 @@ view model =
             , span [ class "tagline" ] [ text "Like GitHub, but for Elm things." ]
             ]
         , div [ class "search" ]
-            [ text "TODO call viewOptions here. Use Html.map to avoid a type mismatch!"
+            [ -- text "TODO call viewOptions here. Use Html.map to avoid a type mismatch!"
+              viewOptions model.options |> Html.map Options
             , div [ class "search-input" ]
                 [ input [ class "search-query", onInput SetQuery, defaultValue model.query ] []
                 , button [ class "search-button", onClick Search ] [ text "Search" ]
@@ -270,16 +275,17 @@ getQueryString : Model -> String
 Try identifying patterns and writing helper functions which are responsible for
 handling those patterns. Then have this function call them. Things to consider:
 
-* There's pattern of adding "+foo:bar" - could we write a helper function for this?
-* In one case, if the "bar" in "+foo:bar" is empty, we want to return "" instead
-  of "+foo:" - is this always true? Should our helper function always do that?
-* We also join query parameters together with "=" and "&" a lot. Can we give
-  that pattern a similar treatment? Should we also take "?" into account?
+  - There's pattern of adding "+foo:bar" - could we write a helper function for this?
+  - In one case, if the "bar" in "+foo:bar" is empty, we want to return "" instead
+    of "+foo:" - is this always true? Should our helper function always do that?
+  - We also join query parameters together with "=" and "&" a lot. Can we give
+    that pattern a similar treatment? Should we also take "?" into account?
 
 If you have time, give this refactor a shot and see how it turns out!
 
 Writing something out the long way like this, and then refactoring to something
 nicer, is generally the preferred way to go about building things in Elm.
+
 -}
 getQueryString : Model -> String
 getQueryString model =
@@ -291,7 +297,7 @@ getQueryString model =
         ++ "+in:"
         ++ model.options.searchIn
         ++ "+stars:>="
-        ++ (toString model.options.minStars)
+        ++ toString model.options.minStars
         ++ "+language:elm"
         ++ (if String.isEmpty model.options.userFilter then
                 ""
